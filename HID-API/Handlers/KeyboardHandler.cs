@@ -1,6 +1,6 @@
 ﻿namespace HID_API.Handlers;
 
-public class HidKeyboardHandler
+public class KeyboardHandler
 {
     private int? _keyCodeModifier;
 
@@ -10,7 +10,7 @@ public class HidKeyboardHandler
     public readonly FileStream DeviceStream;
     public bool Active = true;
 
-    public HidKeyboardHandler(HidHandler hidHandler, FileStream keyboardFileStream, string streamPath)
+    public KeyboardHandler(HidHandler hidHandler, FileStream keyboardFileStream, string streamPath)
     {
         Path = streamPath;
         DeviceStream = keyboardFileStream;

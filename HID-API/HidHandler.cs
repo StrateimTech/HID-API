@@ -11,8 +11,8 @@ public abstract class HidHandler
 
     private readonly ReaderWriterLockSlim _hidWriteLock = new();
 
-    public readonly List<HidKeyboardHandler> HidKeyboardHandlers = new();
-    public readonly List<HidMouseHandler> HidMouseHandlers = new();
+    public readonly List<KeyboardHandler> HidKeyboardHandlers = new();
+    public readonly List<MouseHandler> HidMouseHandlers = new();
 
     protected HidHandler(string[] mousePaths, string[] keyboardPaths, string hidPath)
     {

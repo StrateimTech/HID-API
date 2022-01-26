@@ -2,7 +2,7 @@
 
 namespace HID_API.Handlers;
 
-public class HidMouseHandler
+public class MouseHandler
 {
     public Mouse Mouse { get; private set; } = new();
         
@@ -10,7 +10,7 @@ public class HidMouseHandler
     public readonly FileStream DeviceStream;
     public bool Active = true;
 
-    public HidMouseHandler(HidHandler hidHandler, FileStream mouseFileStream, string streamPath)
+    public MouseHandler(HidHandler hidHandler, FileStream mouseFileStream, string streamPath)
     {
         Path = streamPath;
         DeviceStream = mouseFileStream;
