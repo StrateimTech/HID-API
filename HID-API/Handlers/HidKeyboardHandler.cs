@@ -21,7 +21,7 @@ public class HidKeyboardHandler
                 byte[] buffer = new byte[24];
                 keyboardFileStream.Read(buffer, 0, buffer.Length);
 
-                // offset 8 bytes for timeval
+                // offset 8 bytes ignoring time values
                 var offset = 8;
                 short type = BitConverter.ToInt16(new[] {buffer[offset], buffer[++offset]}, 0);
                 short code = BitConverter.ToInt16(new[] {buffer[++offset], buffer[++offset]}, 0);
