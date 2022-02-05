@@ -407,7 +407,7 @@ public record Keyboard
         KEYFIND = 0x7e,
         KEYMUTE = 0x7f,
         KEYVOLUMEUP = 0x80,
-        KEYVOLUMEDOWN = 0x81,
+        KEYVOLUMEDOWN = 0x81
     }
 
     [Flags]
@@ -420,7 +420,7 @@ public record Keyboard
         KEYRIGHTCTRL = 0x10,
         KEYRIGHTSHIFT = 0x20,
         KEYRIGHTALT = 0x40,
-        KEYRIGHTMETA = 0x80,
+        KEYRIGHTMETA = 0x80
     }
 
     public enum EventType
