@@ -78,15 +78,15 @@ public class KeyboardHandler
                                             if (localModifier == null)
                                             {
                                                 localModifier =
-                                                    (Keyboard.UsbKeyCodeModifiers) (Enum.Parse(
+                                                    (Keyboard.UsbKeyCodeModifiers) Enum.Parse(
                                                         typeof(Keyboard.UsbKeyCodeModifiers),
-                                                        ((Keyboard.LinuxKeyCode) _keysDown[i]).ToString()));
+                                                        ((Keyboard.LinuxKeyCode) _keysDown[i]).ToString());
                                             }
                                             else
                                             {
-                                                localModifier |= (Keyboard.UsbKeyCodeModifiers) (Enum.Parse(
+                                                localModifier |= (Keyboard.UsbKeyCodeModifiers) Enum.Parse(
                                                     typeof(Keyboard.UsbKeyCodeModifiers),
-                                                    ((Keyboard.LinuxKeyCode) _keysDown[i]).ToString()));
+                                                    ((Keyboard.LinuxKeyCode) _keysDown[i]).ToString());
                                             }
                                         }
                                         else
@@ -130,15 +130,15 @@ public class KeyboardHandler
                                             if (localModifier == null)
                                             {
                                                 localModifier =
-                                                    (Keyboard.UsbKeyCodeModifiers) (Enum.Parse(
+                                                    (Keyboard.UsbKeyCodeModifiers) Enum.Parse(
                                                         typeof(Keyboard.UsbKeyCodeModifiers),
-                                                        ((Keyboard.LinuxKeyCode) _keysDown[i]).ToString()));
+                                                        ((Keyboard.LinuxKeyCode) _keysDown[i]).ToString());
                                             }
                                             else
                                             {
-                                                localModifier |= (Keyboard.UsbKeyCodeModifiers) (Enum.Parse(
+                                                localModifier |= (Keyboard.UsbKeyCodeModifiers) Enum.Parse(
                                                     typeof(Keyboard.UsbKeyCodeModifiers),
-                                                    ((Keyboard.LinuxKeyCode) _keysDown[i]).ToString()));
+                                                    ((Keyboard.LinuxKeyCode) _keysDown[i]).ToString());
                                             }
                                         }
                                         else
