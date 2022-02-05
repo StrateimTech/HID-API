@@ -32,7 +32,7 @@ public class MouseHandler
                     mouseSbyteArray[1] = Mouse.InvertMouseX ? Convert.ToSByte(Convert.ToInt32(mouseSbyteArray[1]) * -1) : mouseSbyteArray[1];
                     mouseSbyteArray[2] = Mouse.InvertMouseY ? mouseSbyteArray[2] : Convert.ToSByte(Convert.ToInt32(mouseSbyteArray[2]) * -1);
                     mouseSbyteArray[3] = Mouse.InvertMouseWheel ? mouseSbyteArray[3] : Convert.ToSByte(Convert.ToInt32(mouseSbyteArray[3]) * -1);
-                    Mouse = new Mouse                         
+                    Mouse = Mouse with
                     {
                         LeftButton = (mouseSbyteArray[0] & 0x1) > 0,
                         RightButton = (mouseSbyteArray[0] & 0x2) > 0,
