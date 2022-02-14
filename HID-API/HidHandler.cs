@@ -5,7 +5,7 @@ using HID_API.Utils;
 
 namespace HID_API;
 
-public abstract class HidHandler
+public class HidHandler
 {
     private readonly BinaryWriter? _hidBinaryWriter;
 
@@ -14,11 +14,10 @@ public abstract class HidHandler
     public readonly List<KeyboardHandler> HidKeyboardHandlers = new();
     public readonly List<MouseHandler> HidMouseHandlers = new();
 
-    protected HidHandler(string[] mousePaths, string[] keyboardPaths, string hidPath)
+    public HidHandler(string[] mousePaths, string[] keyboardPaths, string hidPath)
     {
         if (!File.Exists(hidPath))
         {
-            Console.WriteLine($"Couldn't find HID gadget interface... (Path: {hidPath})");
             return;
         }
 
@@ -43,12 +42,8 @@ public abstract class HidHandler
             }
         }
 
-        Console.WriteLine(
-            $"Devices middle-manned (Mouse: {HidMouseHandlers.Count}, Keyboard: {HidKeyboardHandlers.Count})");
-
         if (mousePaths.Length != HidMouseHandlers.Count || keyboardPaths.Length != HidKeyboardHandlers.Count)
         {
-            Console.WriteLine("Starting hot reloading service...");
             new Thread(() =>
             {
                 while (true)
@@ -61,7 +56,6 @@ public abstract class HidHandler
                             {
                                 var keyboardStream = File.Open(mousePath, FileMode.Open, FileAccess.Read);
                                 HidKeyboardHandlers.Add(new(this, keyboardStream, mousePath));
-                                Console.WriteLine("Found mouse!");
                             }
                         }
                     }
@@ -74,7 +68,6 @@ public abstract class HidHandler
                             {
                                 var keyboardStream = File.Open(keyboardPath, FileMode.Open, FileAccess.Read);
                                 HidKeyboardHandlers.Add(new(this, keyboardStream, keyboardPath));
-                                Console.WriteLine("Found keyboard!");
                             }
                         }
                     }
