@@ -1,2 +1,2 @@
 # HID-API
- Library for handling multiple devices through HID protocol and GadgetFS. Allowing spoofed passthrough and spoofed data to be sent to another computer.
+ Super simple library for handling input/output of multiple keyboard/mouse devices through HID protocol and GadgetFS. Allowing spoofed passthrough and spoofed data to be sent to another computer.
