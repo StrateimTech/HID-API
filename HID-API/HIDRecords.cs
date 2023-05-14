@@ -6,13 +6,15 @@ public record Mouse
     public bool RightButton;
     public bool MiddleButton;
 
-    public int X;
-    public int Y;
+    public double X;
+    public double Y;
     public int Wheel;
 
     public bool InvertMouseX = false;
     public bool InvertMouseY = false;
     public bool InvertMouseWheel = false;
+
+    public int SensitivityMultiplier = 1;
 }
 
 // ReSharper disable InconsistentNaming

@@ -127,7 +127,7 @@ public class HidHandler
                         false, false, false, false, false
                     }))
                 },
-                new[] {Convert.ToInt16(mouse.X), Convert.ToInt16(mouse.Y)},
+                new[] {Convert.ToInt16(mouse.X * mouse.SensitivityMultiplier), Convert.ToInt16(mouse.Y * mouse.SensitivityMultiplier)},
                 new[] {Convert.ToSByte(mouse.Wheel)});
         }
         finally
