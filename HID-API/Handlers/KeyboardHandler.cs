@@ -12,6 +12,12 @@ public class KeyboardHandler
 
     public KeyboardHandler(HidHandler hidHandler, FileStream keyboardFileStream, string streamPath)
     {
+        // TODO: This does not handle special keys correctly
+        // TODO: Numpad works but does not work when Numpad is supposed to be enabled
+        // TODO: All F1-F12 keys do not work or rather (They output their fn alternatives) 
+        
+        // TODO: Multithreaded does NOT work with this or MouseHandler, if theres more than one mouse or keyboard input simultaneously they will block each other
+        // TODO: Multithreaded keyboard keys have to be globally handled since keydowns will be overwritten and such 
         Path = streamPath;
         DeviceStream = keyboardFileStream;
         new Thread(() =>
