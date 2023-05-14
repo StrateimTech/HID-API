@@ -4,7 +4,7 @@ namespace HID_API.Handlers;
 
 public class MouseHandler
 {
-    public Mouse Mouse { get; private set; } = new();
+    public Mouse Mouse { get; set; } = new();
         
     public readonly string Path;
     public readonly FileStream DeviceStream;
