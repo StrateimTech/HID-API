@@ -11,10 +11,15 @@ public static class DataUtils
         return bytes[0];
     }
 
-    public static sbyte[] ReadSByteFromStream(FileStream fileStream, int length = 4)
+    public static sbyte[]? ReadSByteFromStream(FileStream fileStream, int length = 4)
     {
         var byteArray = new byte[length];
-        fileStream.Read(byteArray, 0, byteArray.Length);
+        var dataAvailable = fileStream.Read(byteArray, 0, byteArray.Length);
+        if (dataAvailable == 0)
+        {
+            return null;
+        }
+
         var sbyteArray = new sbyte[byteArray.Length];
         Buffer.BlockCopy(byteArray, 0, sbyteArray, 0, byteArray.Length);
         return sbyteArray;
