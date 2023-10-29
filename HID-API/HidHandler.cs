@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Text;
 using HID_API.Handlers;
 using HID_API.Utils;
@@ -9,7 +10,7 @@ public class HidHandler
 {
     private readonly BinaryWriter? _hidBinaryWriter;
 
-    private readonly ReaderWriterLockSlim _hidWriteLock = new();
+    private readonly ConcurrentQueue<GenericEvent> _genericQueue = new();
 
     public readonly List<KeyboardHandler> HidKeyboardHandlers = new();
     public readonly List<MouseHandler> HidMouseHandlers = new();
@@ -23,6 +24,7 @@ public class HidHandler
 
         var hidFileStream = File.Open(hidPath, FileMode.Open, FileAccess.Write);
         _hidBinaryWriter = new BinaryWriter(hidFileStream, Encoding.Default, true);
+        new Thread(QueueThread).Start();
 
         foreach (var mousePath in mousePaths)
         {
@@ -86,6 +88,8 @@ public class HidHandler
 
     public void Stop()
     {
+        _genericQueue.Clear();
+
         foreach (var mouseHandler in HidMouseHandlers)
         {
             mouseHandler.DeviceStream.Close();
@@ -107,67 +111,75 @@ public class HidHandler
         }
     }
 
-    public void WriteMouseReport(Mouse mouse)
+    private void QueueThread()
     {
-        if (_hidBinaryWriter is null)
+        while (true)
         {
-            return;
-        }
-
-        _hidWriteLock.EnterWriteLock();
-        try
-        {
-            WriteUtils.WriteReport(_hidBinaryWriter,
-                1,
-                new[]
+            if (_genericQueue.TryDequeue(out var generic))
+            {
+                switch (generic)
                 {
-                    DataUtils.ToByte(new BitArray(new[]
-                    {
-                        mouse.LeftButton, mouse.RightButton, mouse.MiddleButton,
-                        false, false, false, false, false
-                    }))
-                },
-                new[] {Convert.ToInt16(mouse.X * mouse.SensitivityMultiplier), Convert.ToInt16(mouse.Y * mouse.SensitivityMultiplier)},
-                new[] {Convert.ToSByte(mouse.Wheel)});
-        }
-        finally
-        {
-            _hidWriteLock.ExitWriteLock();
+                    case Mouse mouse:
+                        WriteMouseReport(mouse);
+                        break;
+                    case Keyboard keyboard:
+                        WriteKeyboardReport(keyboard);
+                        break;
+                }
+            }
         }
     }
 
-    public void WriteKeyboardReport(Keyboard keyboard)
+    public void AddGenericToQueue(GenericEvent @event)
+    {
+        _genericQueue.Enqueue(@event);
+    }
+
+    private void WriteMouseReport(Mouse mouse)
     {
         if (_hidBinaryWriter is null)
         {
             return;
         }
 
-        _hidWriteLock.EnterWriteLock();
-        try
+        WriteUtils.WriteReport(_hidBinaryWriter,
+            1,
+            new[]
+            {
+                DataUtils.ToByte(new BitArray(new[]
+                {
+                    mouse.LeftButton, mouse.RightButton, mouse.MiddleButton,
+                    false, false, false, false, false
+                }))
+            },
+            new[] {Convert.ToInt16(mouse.X * mouse.SensitivityMultiplier), Convert.ToInt16(mouse.Y * mouse.SensitivityMultiplier)},
+            new[] {Convert.ToSByte(mouse.Wheel)});
+    }
+
+    private void WriteKeyboardReport(Keyboard keyboard)
+    {
+        if (_hidBinaryWriter is null)
         {
-            byte[] buffer = new byte[9];
-            buffer[0] = 2;
-            if (keyboard.Modifier != null)
-            {
-                buffer[1] = keyboard.Modifier.Value;
-            }
-
-            if (keyboard.KeyCode != null)
-            {
-                buffer[3] = keyboard.KeyCode.Value;
-            }
-
-            for (int i = 4; i < 8; i++)
-            {
-                buffer[i] = keyboard.ExtraKeys[i - 4];
-            }
-
-            WriteUtils.WriteReport(_hidBinaryWriter, buffer);
+            return;
         }
-        finally
+
+        byte[] buffer = new byte[9];
+        buffer[0] = 2;
+        if (keyboard.Modifier != null)
         {
-            _hidWriteLock.ExitWriteLock();
+            buffer[1] = keyboard.Modifier.Value;
         }
+
+        if (keyboard.KeyCode != null)
+        {
+            buffer[3] = keyboard.KeyCode.Value;
+        }
+
+        for (int i = 4; i < 8; i++)
+        {
+            buffer[i] = keyboard.ExtraKeys[i - 4];
+        }
+
+        WriteUtils.WriteReport(_hidBinaryWriter, buffer);
     }
 }

@@ -5,7 +5,6 @@ namespace HID_API.Handlers;
 public class MouseHandler
 {
     public Mouse Mouse { get; set; } = new();
-    public ReaderWriterLockSlim mouseLock { get; }= new();
     
     public readonly string Path;
     public readonly FileStream DeviceStream;
@@ -39,33 +38,17 @@ public class MouseHandler
                     mouseSbyteArray[2] = Mouse.InvertMouseY ? mouseSbyteArray[2] : Convert.ToSByte(Convert.ToInt32(mouseSbyteArray[2]) * -1);
                     mouseSbyteArray[3] = Mouse.InvertMouseWheel ? mouseSbyteArray[3] : Convert.ToSByte(Convert.ToInt32(mouseSbyteArray[3]) * -1);
 
-                    mouseLock.EnterWriteLock();
-                    try
+                    Mouse = new Mouse
                     {
-                        Mouse = new Mouse
-                        {
-                            LeftButton = (mouseSbyteArray[0] & 0x1) > 0,
-                            RightButton = (mouseSbyteArray[0] & 0x2) > 0,
-                            MiddleButton = (mouseSbyteArray[0] & 0x4) > 0,
-                            X = Convert.ToInt32(mouseSbyteArray[1]),
-                            Y = Convert.ToInt32(mouseSbyteArray[2]),
-                            Wheel = Convert.ToInt32(mouseSbyteArray[3])
-                        };
-                    }
-                    finally
-                    {
-                        mouseLock.ExitWriteLock();
-                    }
+                        LeftButton = (mouseSbyteArray[0] & 0x1) > 0,
+                        RightButton = (mouseSbyteArray[0] & 0x2) > 0,
+                        MiddleButton = (mouseSbyteArray[0] & 0x4) > 0,
+                        X = Convert.ToInt32(mouseSbyteArray[1]),
+                        Y = Convert.ToInt32(mouseSbyteArray[2]),
+                        Wheel = Convert.ToInt32(mouseSbyteArray[3])
+                    };
 
-                    mouseLock.EnterReadLock();
-                    try
-                    {
-                        hidHandler.WriteMouseReport(Mouse);
-                    }
-                    finally
-                    {
-                        mouseLock.ExitReadLock();
-                    }
+                    hidHandler.AddGenericToQueue(Mouse);
                 }
             }
         }).Start();

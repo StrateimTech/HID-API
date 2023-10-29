@@ -16,7 +16,6 @@ public class KeyboardHandler
         // TODO: Numpad works but does not work when Numpad is supposed to be enabled
         // TODO: All F1-F12 keys do not work or rather (They output their fn alternatives) 
         
-        // TODO: Multithreaded does NOT work with this or MouseHandler, if theres more than one mouse or keyboard input simultaneously they will block each other
         // TODO: Multithreaded keyboard keys have to be globally handled since keydowns will be overwritten and such 
         Path = streamPath;
         DeviceStream = keyboardFileStream;
@@ -106,7 +105,7 @@ public class KeyboardHandler
 
                                 keyboard.Modifier = localModifier != null ? Convert.ToByte(localModifier) : null;
 
-                                hidHandler.WriteKeyboardReport(keyboard);
+                                hidHandler.AddGenericToQueue(keyboard);
                                 if (!_keysDown.Contains(code))
                                     _keysDown.Add(code);
                                 break;
@@ -158,7 +157,7 @@ public class KeyboardHandler
 
                                 keyboard.Modifier = localModifier != null ? Convert.ToByte(localModifier) : null;
 
-                                hidHandler.WriteKeyboardReport(keyboard);
+                                hidHandler.AddGenericToQueue(keyboard);
                                 break;
                             }
                         }

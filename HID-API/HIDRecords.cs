@@ -1,6 +1,8 @@
 namespace HID_API;
 
-public record Mouse
+public abstract record GenericEvent;
+
+public record Mouse : GenericEvent
 {
     public bool LeftButton;
     public bool RightButton;
@@ -20,7 +22,7 @@ public record Mouse
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Global
 // ReSharper disable IdentifierTypo
-public record Keyboard
+public record Keyboard : GenericEvent
 {
     public byte? KeyCode;
     public byte? Modifier;
