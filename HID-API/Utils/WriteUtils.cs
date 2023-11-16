@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Buffers.Binary;
+using System.Text;
 
 namespace HID_API.Utils;
 
@@ -20,14 +21,26 @@ public static class WriteUtils
     public static void WriteReport(BinaryWriter binaryWriter, byte reportId, byte[] bytes, short[] shorts,
         sbyte[] signedBytes)
     {
-        binaryWriter.Write(reportId);
-        binaryWriter.Write(bytes);
-        foreach (var signedUShort in shorts)
+        var data = new List<byte[]>
         {
-            binaryWriter.Write(signedUShort);
+            new []{reportId},
+            bytes
+        };
+        
+        foreach (var shorty in shorts)
+        {
+            Span<byte> buffer = new byte[sizeof(short)];
+            BinaryPrimitives.WriteInt16LittleEndian(buffer, shorty);
+            
+            foreach (var shortByte in buffer)
+            {
+                data.Add(new []{shortByte});
+            }
         }
 
-        binaryWriter.Write((byte[]) (object) signedBytes);
+        data.Add((byte[]) (object) signedBytes);
+
+        binaryWriter.Write(data.SelectMany(d => d).ToArray());
         binaryWriter.Flush();
     }
 }
