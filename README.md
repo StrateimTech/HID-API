@@ -1,7 +1,9 @@
 # HID-API
 .NET library leveraging Man-in-the-middle (MITM) for seamless mouse & keyboard passthrough, while allowing for data interception and injection to an external computer.
 
-![picture example](./examples/picture-example.png)
+<p align="center">
+    <img alt="Picture example" src="./examples/picture-example.png">
+</p>
 
 Icons from [icons8](https://icons8.com/).
 
