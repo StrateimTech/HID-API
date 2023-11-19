@@ -68,6 +68,27 @@ finally
 }
 ```
 
+## Using with different devices
+By default the first mouse you connect should default all output into the legacy ``/dev/input/mice`` virtual device file.
+However if it does not you'll have to find it in ``/dev/input/by-path/...mouse``.
+
+if want to add more devices such as keyboard it'll also be in ``/dev/input/by-path/...``.
+
+```c#
+var hidThread = new Thread(() => hidHandler = new HidHandler(new[]
+    {
+        "/dev/input/mice"
+    },
+    new[] {"/dev/input/by-id/usb-Logitech_G502_HERO_Gaming_Mouse_D86730BE8888-if01-event-kbd"}, 
+    "/dev/hidg0")
+)
+{
+    IsBackground = true
+};
+hidThread.Start();
+```
+This adds support for key macros on my real g502 mouse however this will vary based on your mouse. 
+
 ## Features
 - Hot reloading devices
 - Multithreading capable

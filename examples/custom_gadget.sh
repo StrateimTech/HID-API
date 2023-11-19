@@ -11,7 +11,7 @@ echo 0x0100 > bcdDevice # v1.0.0
 echo 0x0310 > bcdUSB # USB3.1
 
 mkdir -p strings/0x409
-echo "0E6D395D3333" > strings/0x409/serialnumber
+echo "D86730BE8888" > strings/0x409/serialnumber
 echo "Logitech" > strings/0x409/manufacturer
 echo "G502 SE HERO Gaming Mouse" > strings/0x409/product
 
