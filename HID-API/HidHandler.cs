@@ -8,9 +8,8 @@ namespace HID_API;
 
 public class HidHandler
 {
-    private readonly BinaryWriter? _hidBinaryWriter;
-
-    private readonly ConcurrentQueue<GenericEvent> _genericQueue = new();
+    private readonly FileStream? _hidStream;
+    private readonly object _streamLock = new();
 
     public readonly List<KeyboardHandler> HidKeyboardHandlers = new();
     public readonly List<MouseHandler> HidMouseHandlers = new();
@@ -22,9 +21,7 @@ public class HidHandler
             return;
         }
 
-        var hidFileStream = File.Open(hidPath, FileMode.Open, FileAccess.Write);
-        _hidBinaryWriter = new BinaryWriter(hidFileStream, Encoding.Default, true);
-        new Thread(QueueThread).Start();
+        _hidStream = new FileStream(hidPath, FileMode.Open, FileAccess.Write, FileShare.None, 1024, FileOptions.WriteThrough);
 
         foreach (var mousePath in mousePaths)
         {
@@ -88,8 +85,6 @@ public class HidHandler
 
     public void Stop()
     {
-        _genericQueue.Clear();
-
         foreach (var mouseHandler in HidMouseHandlers)
         {
             mouseHandler.DeviceStream.Close();
@@ -102,84 +97,62 @@ public class HidHandler
             keyboardHandler.Active = false;
         }
 
-        if (_hidBinaryWriter is not null)
+        if (_hidStream != null)
         {
             WriteMouseReport(new Mouse());
             WriteKeyboardReport(new Keyboard());
 
-            _hidBinaryWriter.Close();
+            _hidStream.Close();
         }
     }
 
-    private void QueueThread()
+    public void WriteGenericEvent(GenericEvent @event)
     {
-        while (true)
+        switch (@event)
         {
-            if (_genericQueue.TryDequeue(out var generic))
-            {
-                switch (generic)
-                {
-                    case Mouse mouse:
-                        WriteMouseReport(mouse);
-                        break;
-                    case Keyboard keyboard:
-                        WriteKeyboardReport(keyboard);
-                        break;
-                }
-            }
+            case Mouse mouse:
+                WriteMouseReport(mouse);
+                break;
+            case Keyboard keyboard:
+                WriteKeyboardReport(keyboard);
+                break;
         }
-    }
-
-    public void AddGenericToQueue(GenericEvent @event)
-    {
-        _genericQueue.Enqueue(@event);
     }
 
     private void WriteMouseReport(Mouse mouse)
     {
-        if (_hidBinaryWriter is null)
+        lock (_streamLock)
         {
-            return;
-        }
-
-        WriteUtils.WriteReport(_hidBinaryWriter,
-            1,
-            new[]
+            if (_hidStream == null || !_hidStream.CanWrite)
             {
-                DataUtils.ToByte(new BitArray(new[]
+                return;
+            }
+
+            WriteUtils.WriteMouseReport(_hidStream,
+                1,
+                new[]
                 {
-                    mouse.LeftButton, mouse.RightButton, mouse.MiddleButton,
-                    false, false, false, false, false
-                }))
-            },
-            new[] {Convert.ToInt16(mouse.X * mouse.SensitivityMultiplier), Convert.ToInt16(mouse.Y * mouse.SensitivityMultiplier)},
-            new[] {Convert.ToSByte(mouse.Wheel)});
+                    DataUtils.ToByte(new BitArray(new[]
+                    {
+                        mouse.LeftButton, mouse.RightButton, mouse.MiddleButton,
+                        false, false, false, false, false
+                    }))
+                },
+                new[] {Convert.ToInt16(mouse.X * mouse.SensitivityMultiplier), Convert.ToInt16(mouse.Y * mouse.SensitivityMultiplier)},
+                new[] {Convert.ToSByte(mouse.Wheel)});
+        }
     }
 
     private void WriteKeyboardReport(Keyboard keyboard)
     {
-        if (_hidBinaryWriter is null)
+        lock (_streamLock)
         {
-            return;
-        }
+            if (_hidStream == null || !_hidStream.CanWrite)
+            {
+                return;
+            }
 
-        byte[] buffer = new byte[9];
-        buffer[0] = 2;
-        if (keyboard.Modifier != null)
-        {
-            buffer[1] = keyboard.Modifier.Value;
+            WriteUtils.WriteKeyboardReport(_hidStream, keyboard);
         }
-
-        if (keyboard.KeyCode != null)
-        {
-            buffer[3] = keyboard.KeyCode.Value;
-        }
-
-        for (int i = 4; i < 8; i++)
-        {
-            buffer[i] = keyboard.ExtraKeys[i - 4];
-        }
-
-        WriteUtils.WriteReport(_hidBinaryWriter, buffer);
     }
 }

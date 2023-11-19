@@ -105,7 +105,7 @@ public class KeyboardHandler
 
                                 keyboard.Modifier = localModifier != null ? Convert.ToByte(localModifier) : null;
 
-                                hidHandler.AddGenericToQueue(keyboard);
+                                hidHandler.WriteGenericEvent(keyboard);
                                 if (!_keysDown.Contains(code))
                                     _keysDown.Add(code);
                                 break;
@@ -157,7 +157,7 @@ public class KeyboardHandler
 
                                 keyboard.Modifier = localModifier != null ? Convert.ToByte(localModifier) : null;
 
-                                hidHandler.AddGenericToQueue(keyboard);
+                                hidHandler.WriteGenericEvent(keyboard);
                                 break;
                             }
                         }
