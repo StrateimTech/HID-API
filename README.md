@@ -39,7 +39,7 @@ hidThread.Start();
 ```
 
 ### Extract state from device (Mouse)
-Grabs data out of mouse 0 (*_/dev/input/mice_*), HidMouseHandlers is just a list make sure it's not empty. 
+Grabs the current state from mouse 0 (*_/dev/input/mice_*), HidMouseHandlers is just a list make sure it's not empty. 
 ```c#
 bool left;
 bool right;
@@ -56,7 +56,7 @@ finally
 ```
 
 ### Injecting mouse events through the stream
-Moves the mouse down 5 
+Moves the mouse down 5 while maintaining left & right button state.
 ```c#
 hidHandler.HidMouseHandlers[0].MouseLock.EnterReadLock();
 try
