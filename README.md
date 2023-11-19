@@ -1,6 +1,10 @@
 # HID-API
 .NET library leveraging Man-in-the-middle (MITM) for seamless mouse & keyboard passthrough, while allowing for data interception and injection to an external computer.
 
+![picture example](./examples/picture-example.png)
+
+Icons from [icons8](https://icons8.com/).
+
 ## Pi setup
 Assuming your using a Rpi 4b, Zero, or newer Rpi 5
 1. dwc2 driver must be loaded on your pi you can follow this [guide](https://gist.github.com/gbaman/975e2db164b3ca2b51ae11e45e8fd40a?permalink_comment_id=2970837) or [isticktoit "Step 1"](https://www.isticktoit.net/?p=1383)
