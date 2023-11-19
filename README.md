@@ -1,8 +1,79 @@
 # HID-API
- Super simple library for handling input/output of multiple keyboard/mouse devices through HID protocol and GadgetFS. Allowing spoofed passthrough and spoofed data to be sent to another computer.
+.NET library leveraging Man-in-the-middle (MITM) for seamless mouse & keyboard passthrough, while allowing for data interception and injection to an external computer.
 
-# Report descriptor (Useable with this dumbed down & simple library)
-## English (Parsed by https://eleccelerator.com/usbdescreqparser)
+## Pi setup
+Assuming your using a Rpi 4b, Zero, or newer Rpi 5
+1. dwc2 driver must be loaded on your pi you can follow this [guide](https://gist.github.com/gbaman/975e2db164b3ca2b51ae11e45e8fd40a?permalink_comment_id=2970837) or [isticktoit "Step 1"](https://www.isticktoit.net/?p=1383)
+2. Create a custom gadget here's an [example](./examples/custom_gadget.sh) using the compatible report descriptor. Make sure to run it with sudo, since it makes a directory in ``/sys/kernel/config/usb_gadget/``.
+```
+sudo ./custom_gadget.sh
+sudo restart now
+```
+3. Now this library will be able to function
+
+## Setup on other devices
+- Dedicated [salve](https://en.wikipedia.org/wiki/Master/slave_(technology)) computer must support [USB OTG](https://en.wikipedia.org/wiki/USB_On-The-Go)
+- Linux installed on slave computer
+- Follow [pi setup](#pi-setup) to get gadget's working or follow [your own guide](https://google.com) _``modprobe gadgetfs``_
+
+## Examples
+Start handling inputs from ``/dev/input/mice`` (mouse device path) and output them to ``/dev/hidg0`` (**_the external computer_**)
+```c#
+var hidThread = new Thread(() => hidHandler = new HidHandler(new[]
+    {
+        "/dev/input/mice"
+    },
+    null!, 
+    "/dev/hidg0")
+)
+{
+    IsBackground = true
+};
+hidThread.Start();
+```
+
+### Extract state from device (Mouse)
+Grabs data out of mouse 0 (*_/dev/input/mice_*), HidMouseHandlers is just a list make sure it's not empty. 
+```c#
+bool left;
+bool right;
+hidHandler.HidMouseHandlers[0].MouseLock.EnterReadLock();
+try
+{
+    left = hidHandler.HidMouseHandlers[0].Mouse.LeftButton;
+    right = hidHandler.HidMouseHandlers[0].Mouse.RightButton;
+}
+finally
+{
+    hidHandler.HidMouseHandlers[0].MouseLock.ExitReadLock();
+}
+```
+
+### Injecting mouse events through the stream
+Moves the mouse down 5 
+```c#
+hidHandler.HidMouseHandlers[0].MouseLock.EnterReadLock();
+try
+{
+    hidHandler.WriteGenericEvent(hidHandler.HidMouseHandlers[0].Mouse with
+    {
+        X = 0,
+        Y = 5,
+        Wheel = 0
+    });
+}
+finally
+{
+    hidHandler.HidMouseHandlers[0].MouseLock.ExitReadLock();
+}
+```
+
+## Features
+- Hot reloading devices
+- Multithreading capable
+
+## Report descriptor used by this library
+Parsed output from [eleccelerator](https://eleccelerator.com/usbdescreqparser).
 ```
 0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
 0x09, 0x02,        // Usage (Mouse)
@@ -74,7 +145,7 @@
 // 133 bytes
 ```
 
-## HEX
+### HEX
 ```
 0x05 0x01 0x09 0x02 0xA1 0x01 0x09 0x01 0xA1 0x00 0x85 0x01 0x05 0x09 0x19 0x01 0x29 0x03 0x15 0x00 0x25 0x01 0x95 0x03 0x75 0x01 0x81 0x02 0x95 0x01 0x75 0x05 0x81 0x03 0x05 0x01 0x09 0x30 0x09 0x31 0x16 0x01 0x80 0x26 0xFF 0x7F 0x75 0x10 0x95 0x02 0x81 0x06 0x09 0x38 0x15 0x81 0x25 0x7F 0x75 0x08 0x95 0x01 0x81 0x06 0xC0 0xC0 0x05 0x01 0x09 0x06 0xA1 0x01 0x85 0x02 0x05 0x07 0x19 0xe0 0x29 0xe7 0x15 0x00 0x25 0x01 0x75 0x01 0x95 0x08 0x81 0x02 0x75 0x08 0x95 0x01 0x81 0x01 0x75 0x01 0x95 0x03 0x05 0x08 0x19 0x01 0x29 0x03 0x91 0x02 0x75 0x01 0x95 0x05 0x91 0x01 0x75 0x08 0x95 0x06 0x15 0x00 0x26 0xff 0x00 0x05 0x07 0x19 0x00 0x2a 0xff 0x00 0x81 0x00 
 ```
