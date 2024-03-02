@@ -146,8 +146,8 @@ public class HidHandler
                 {
                     DataUtils.ToByte(new BitArray(new[]
                     {
-                        mouse.LeftButton, mouse.RightButton, mouse.MiddleButton,
-                        false, false, false, false, false
+                        mouse.LeftButton, mouse.RightButton, mouse.MiddleButton, mouse.FourButton, mouse.FiveButton,
+                        false, false, false
                     }))
                 },
                 new[] {Convert.ToInt16(mouse.X * mouse.SensitivityMultiplier), Convert.ToInt16(mouse.Y * mouse.SensitivityMultiplier)},

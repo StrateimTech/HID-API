@@ -8,6 +8,9 @@ public record Mouse : GenericEvent
     public bool RightButton;
     public bool MiddleButton;
 
+    public bool FourButton;
+    public bool FiveButton;
+    
     public double X;
     public double Y;
     public int Wheel;
