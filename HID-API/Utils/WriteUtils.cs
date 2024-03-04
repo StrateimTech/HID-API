@@ -1,4 +1,5 @@
 ﻿using System.Buffers.Binary;
+using System.Diagnostics;
 
 namespace HID_API.Utils;
 
@@ -31,30 +32,22 @@ public static class WriteUtils
         stream.Flush();
     }
 
-    public static void WriteMouseReport(FileStream stream, byte reportId, byte[] bytes, short[] shorts,
-        sbyte[] signedBytes)
+    public static void WriteMouseReport(FileStream stream, byte reportId, byte bytes, short[] shorts, sbyte signedByte)
     {
-        var data = new List<byte[]>
-        {
-            new[] {reportId},
-            bytes
-        };
-
-        foreach (var shorty in shorts)
-        {
-            Span<byte> buffer = new byte[sizeof(short)];
-            BinaryPrimitives.WriteInt16LittleEndian(buffer, shorty);
-
-            foreach (var shortByte in buffer)
-            {
-                data.Add(new[] {shortByte});
-            }
-        }
-
-        data.Add((byte[]) (object) signedBytes);
-
-        var flatArray = data.SelectMany(d => d).ToArray();
-        stream.WriteAsync(flatArray);
+        int totalSize = sizeof(byte) + sizeof(byte) + (sizeof(short) * shorts.Length) + sizeof(sbyte);
+        
+        using var memoryStream = new MemoryStream(totalSize);
+        memoryStream.WriteByte(reportId);
+        memoryStream.WriteByte(bytes);
+    
+        byte[] shortBytes = new byte[shorts.Length * sizeof(short)];
+        Buffer.BlockCopy(shorts, 0, shortBytes, 0, shortBytes.Length);
+        memoryStream.Write(shortBytes, 0, shortBytes.Length);
+        
+        memoryStream.WriteByte((byte)signedByte);
+    
+        byte[] buffer = memoryStream.ToArray();
+        stream.Write(buffer, 0, buffer.Length);
         stream.Flush();
     }
 }

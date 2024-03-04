@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text;
 using HID_API.Handlers;
 using HID_API.Utils;
@@ -21,7 +22,7 @@ public class HidHandler
             return;
         }
 
-        _hidStream = new FileStream(hidPath, FileMode.Open, FileAccess.Write, FileShare.None, 1024, FileOptions.WriteThrough);
+        _hidStream = new FileStream(hidPath, FileMode.Open, FileAccess.Write, FileShare.None, 0, FileOptions.WriteThrough);
 
         if (mousePaths != null)
         {
@@ -133,6 +134,18 @@ public class HidHandler
 
     private void WriteMouseReport(Mouse mouse)
     {
+        byte buttonByte = (byte) ((mouse.LeftButton ? 1 : 0) |
+                                  (mouse.RightButton ? 2 : 0) |
+                                  (mouse.MiddleButton ? 4 : 0) |
+                                  (mouse.FourButton ? 8 : 0) |
+                                  (mouse.FiveButton ? 16 : 0));
+
+        float sensitivityMultiplier = mouse.SensitivityMultiplier;
+        
+        short x = (short) (mouse.X * sensitivityMultiplier);
+        short y = (short) (mouse.Y * sensitivityMultiplier);
+        sbyte wheel = (sbyte) mouse.Wheel;
+        
         lock (_streamLock)
         {
             if (_hidStream == null || !_hidStream.CanWrite)
@@ -142,16 +155,9 @@ public class HidHandler
 
             WriteUtils.WriteMouseReport(_hidStream,
                 1,
-                new[]
-                {
-                    DataUtils.ToByte(new BitArray(new[]
-                    {
-                        mouse.LeftButton, mouse.RightButton, mouse.MiddleButton, mouse.FourButton, mouse.FiveButton,
-                        false, false, false
-                    }))
-                },
-                new[] {Convert.ToInt16(mouse.X * mouse.SensitivityMultiplier), Convert.ToInt16(mouse.Y * mouse.SensitivityMultiplier)},
-                new[] {Convert.ToSByte(mouse.Wheel)});
+                buttonByte,
+                new[] {x, y},
+                wheel);
         }
     }
 
