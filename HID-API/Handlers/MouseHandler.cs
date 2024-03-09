@@ -43,31 +43,38 @@ public class MouseHandler
                     var fiveButton = false;
                     int wheel;
 
+                    bool invertX;
+                    bool invertY;
+                    bool invertWheel;
+
                     MouseLock.EnterReadLock();
                     try
                     {
-                        mouseSbyteArray[1] = Mouse.InvertMouseX ? Convert.ToSByte(Convert.ToInt32(mouseSbyteArray[1]) * -1) : mouseSbyteArray[1];
-                        mouseSbyteArray[2] = Mouse.InvertMouseY ? mouseSbyteArray[2] : Convert.ToSByte(Convert.ToInt32(mouseSbyteArray[2]) * -1);
-
-                        // future proofing
-                        if (mouseSbyteArray.Length != 4)
-                        {
-                            mouseSbyteArray[3] = Mouse.InvertMouseWheel ? mouseSbyteArray[3] : Convert.ToSByte(Convert.ToInt32(mouseSbyteArray[3]) * -1);
-                            wheel = Convert.ToInt32(mouseSbyteArray[3]);
-                        }
-                        else
-                        {
-                            fourButton = (mouseSbyteArray[3] & 0x10) > 0;
-                            fiveButton = (mouseSbyteArray[3] & 0x20) > 0;
-
-                            int z = (mouseSbyteArray[3] & 0xF) > 7 ? (mouseSbyteArray[3] & 0xF) - 16 : (mouseSbyteArray[3] & 0xF);
-
-                            wheel = Mouse.InvertMouseWheel ? z : z * -1;
-                        }
+                        invertX = Mouse.InvertMouseX;
+                        invertY = Mouse.InvertMouseY;
+                        invertWheel = Mouse.InvertMouseWheel;
                     }
                     finally
                     {
                         MouseLock.ExitReadLock();
+                    }
+                    
+                    mouseSbyteArray[1] = invertX ? Convert.ToSByte(Convert.ToInt32(mouseSbyteArray[1]) * -1) : mouseSbyteArray[1];
+                    mouseSbyteArray[2] = invertY ? mouseSbyteArray[2] : Convert.ToSByte(Convert.ToInt32(mouseSbyteArray[2]) * -1);
+                    
+                    if (mouseSbyteArray.Length != 4)
+                    {
+                        mouseSbyteArray[3] = invertWheel ? mouseSbyteArray[3] : Convert.ToSByte(Convert.ToInt32(mouseSbyteArray[3]) * -1);
+                        wheel = Convert.ToInt32(mouseSbyteArray[3]);
+                    }
+                    else
+                    {
+                        fourButton = (mouseSbyteArray[3] & 0x10) > 0;
+                        fiveButton = (mouseSbyteArray[3] & 0x20) > 0;
+                    
+                        int z = (mouseSbyteArray[3] & 0xF) > 7 ? (mouseSbyteArray[3] & 0xF) - 16 : (mouseSbyteArray[3] & 0xF);
+                    
+                        wheel = invertWheel ? z : z * -1;
                     }
                     
                     var localMouse = new Mouse
@@ -92,7 +99,7 @@ public class MouseHandler
                         MouseLock.ExitWriteLock();
                     }
 
-                    hidHandler.WriteGenericEvent(localMouse);
+                    hidHandler.WriteMouseReport(localMouse);
                 }
             }
         }).Start();

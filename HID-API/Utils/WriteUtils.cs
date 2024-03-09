@@ -1,7 +1,4 @@
-﻿using System.Buffers.Binary;
-using System.Diagnostics;
-
-namespace HID_API.Utils;
+﻿namespace HID_API.Utils;
 
 public static class WriteUtils
 {
@@ -32,22 +29,17 @@ public static class WriteUtils
         stream.Flush();
     }
 
+    private static byte[] _mouseBuffer = GC.AllocateArray<byte>(7, true);
+    
     public static void WriteMouseReport(FileStream stream, byte reportId, byte bytes, short[] shorts, sbyte signedByte)
     {
-        int totalSize = sizeof(byte) + sizeof(byte) + (sizeof(short) * shorts.Length) + sizeof(sbyte);
+        _mouseBuffer[0] = reportId;
+        _mouseBuffer[1] = bytes;
         
-        using var memoryStream = new MemoryStream(totalSize);
-        memoryStream.WriteByte(reportId);
-        memoryStream.WriteByte(bytes);
-    
-        byte[] shortBytes = new byte[shorts.Length * sizeof(short)];
-        Buffer.BlockCopy(shorts, 0, shortBytes, 0, shortBytes.Length);
-        memoryStream.Write(shortBytes, 0, shortBytes.Length);
+        Buffer.BlockCopy(shorts, 0, _mouseBuffer, 2, 4);
+        _mouseBuffer[6] = (byte)signedByte;
         
-        memoryStream.WriteByte((byte)signedByte);
-    
-        byte[] buffer = memoryStream.ToArray();
-        stream.Write(buffer, 0, buffer.Length);
-        stream.Flush();
+        stream.Write(_mouseBuffer, 0, 7);
+        // stream.Flush();
     }
 }

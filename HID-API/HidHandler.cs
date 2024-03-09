@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Text;
-using HID_API.Handlers;
+﻿using HID_API.Handlers;
 using HID_API.Utils;
 
 namespace HID_API;
@@ -119,6 +115,7 @@ public class HidHandler
         }
     }
 
+    [Obsolete("Adds overhead for simplicity; be wary may decrease performance slightly.")]
     public void WriteGenericEvent(GenericEvent @event)
     {
         switch (@event)
@@ -132,7 +129,7 @@ public class HidHandler
         }
     }
 
-    private void WriteMouseReport(Mouse mouse)
+    public void WriteMouseReport(Mouse mouse)
     {
         byte buttonByte = (byte) ((mouse.LeftButton ? 1 : 0) |
                                   (mouse.RightButton ? 2 : 0) |
@@ -161,7 +158,7 @@ public class HidHandler
         }
     }
 
-    private void WriteKeyboardReport(Keyboard keyboard)
+    public void WriteKeyboardReport(Keyboard keyboard)
     {
         lock (_streamLock)
         {
