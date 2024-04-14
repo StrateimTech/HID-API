@@ -28,18 +28,17 @@ public static class WriteUtils
         stream.WriteAsync(buffer);
         stream.Flush();
     }
-
-    private static byte[] _mouseBuffer = GC.AllocateArray<byte>(7, true);
     
     public static void WriteMouseReport(FileStream stream, byte reportId, byte bytes, short[] shorts, sbyte signedByte)
     {
-        _mouseBuffer[0] = reportId;
-        _mouseBuffer[1] = bytes;
+        byte[] buffer = new byte[7];
         
-        Buffer.BlockCopy(shorts, 0, _mouseBuffer, 2, 4);
-        _mouseBuffer[6] = (byte)signedByte;
+        buffer[0] = reportId;
+        buffer[1] = bytes;
         
-        stream.Write(_mouseBuffer, 0, 7);
-        // stream.Flush();
+        Buffer.BlockCopy(shorts, 0, buffer, 2, 4);
+        buffer[6] = (byte)signedByte;
+        
+        stream.Write(buffer, 0, 7);
     }
 }
