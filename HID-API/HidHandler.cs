@@ -118,20 +118,6 @@ public class HidHandler
         }
     }
 
-    [Obsolete("Adds overhead for simplicity; be wary may decrease performance slightly.")]
-    public void WriteGenericEvent(GenericEvent @event)
-    {
-        switch (@event)
-        {
-            case Mouse mouse:
-                WriteMouseReport(mouse);
-                break;
-            case Keyboard keyboard:
-                WriteKeyboardReport(keyboard);
-                break;
-        }
-    }
-
     public void WriteMouseReport(Mouse mouse)
     {
         byte buttonByte = (byte) ((mouse.LeftButton ? 1 : 0) |
