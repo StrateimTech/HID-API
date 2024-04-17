@@ -11,7 +11,7 @@ public class HidHandler
     public readonly List<KeyboardHandler> HidKeyboardHandlers = new();
     public readonly List<MouseHandler> HidMouseHandlers = new();
 
-    public HidHandler(string[]? mousePaths, string[]? keyboardPaths, string hidPath)
+    public HidHandler(string[]? mousePaths, string[]? keyboardPaths, string hidPath, bool hotReload = true)
     {
         if (!File.Exists(hidPath))
         {
@@ -44,49 +44,52 @@ public class HidHandler
             }
         }
 
+        if (!hotReload)
+        {
+            return;
+        }
+
         if (mousePaths?.Length != HidMouseHandlers.Count || keyboardPaths?.Length != HidKeyboardHandlers.Count)
         {
             new Thread(() =>
             {
                 while (true)
                 {
-                    if (mousePaths != null)
+                    if (mousePaths != null && HidMouseHandlers.Count != mousePaths.Length)
                     {
                         foreach (var mousePath in mousePaths)
                         {
-                            if (!HidMouseHandlers.Exists(item => item.Path == mousePath))
+                            if (!File.Exists(mousePath))
                             {
-                                if (File.Exists(mousePath))
-                                {
-                                    var keyboardStream = File.Open(mousePath, FileMode.Open, FileAccess.Read);
-                                    HidKeyboardHandlers.Add(new(this, keyboardStream, mousePath));
-                                }
+                                continue;
+                            }
+                            
+                            if (HidMouseHandlers.All(mouse => mouse.Path != mousePath))
+                            {
+                                var mouseStream = File.Open(mousePath, FileMode.Open, FileAccess.Read);
+                                HidMouseHandlers.Add(new(this, mouseStream, mousePath));
                             }
                         }
                     }
 
-                    if (keyboardPaths != null)
+                    if (keyboardPaths != null && HidKeyboardHandlers.Count != keyboardPaths.Length)
                     {
                         foreach (var keyboardPath in keyboardPaths)
                         {
-                            if (!HidKeyboardHandlers.Exists(item => item.Path == keyboardPath))
+                            if (!File.Exists(keyboardPath))
                             {
-                                if (File.Exists(keyboardPath))
-                                {
-                                    var keyboardStream = File.Open(keyboardPath, FileMode.Open, FileAccess.Read);
-                                    HidKeyboardHandlers.Add(new(this, keyboardStream, keyboardPath));
-                                }
+                                continue;
+                            }
+
+                            if (HidKeyboardHandlers.Any(keyboard => keyboard.Path != keyboardPath))
+                            {
+                                var keyboardStream = File.Open(keyboardPath, FileMode.Open, FileAccess.Read);
+                                HidKeyboardHandlers.Add(new(this, keyboardStream, keyboardPath));
                             }
                         }
                     }
 
-                    if (mousePaths?.Length == HidMouseHandlers.Count &&
-                        keyboardPaths?.Length == HidKeyboardHandlers.Count)
-                    {
-                        break;
-                    }
-
-                    Thread.Sleep(1);
+                    Thread.Sleep(5);
                 }
             }).Start();
         }
