@@ -11,12 +11,14 @@ public class MouseHandler
     public readonly FileStream DeviceStream;
     public bool Active = true;
 
-    public MouseHandler(HidHandler hidHandler, FileStream mouseFileStream, string streamPath)
+    public MouseHandler(HidHandler hidHandler, FileStream mouseFileStream, string streamPath, string hidPath)
     {
         Path = streamPath;
         DeviceStream = mouseFileStream;
         new Thread(() =>
         {
+            var hidStream = hidHandler.CreateHidStream(hidPath);
+            
             // https://wiki.osdev.org/PS/2_Mouse
             // Enable Z axis & side buttons (four, five) via magic sample rate
             mouseFileStream.Write(new byte[] {0xf3, 200, 0xf3, 200, 0xf3, 80});
@@ -99,7 +101,7 @@ public class MouseHandler
                         MouseLock.ExitWriteLock();
                     }
 
-                    hidHandler.WriteMouseReport(localMouse);
+                    hidHandler.WriteMouseReport(localMouse, hidStream);
                 }
             }
         }).Start();

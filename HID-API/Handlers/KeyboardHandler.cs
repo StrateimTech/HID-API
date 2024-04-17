@@ -10,7 +10,7 @@ public class KeyboardHandler
     public readonly FileStream DeviceStream;
     public bool Active = true;
 
-    public KeyboardHandler(HidHandler hidHandler, FileStream keyboardFileStream, string streamPath)
+    public KeyboardHandler(HidHandler hidHandler, FileStream keyboardFileStream, string streamPath, string hidPath)
     {
         // TODO: This does not handle special keys correctly
         // TODO: Numpad works but does not work when Numpad is supposed to be enabled
@@ -21,6 +21,8 @@ public class KeyboardHandler
         DeviceStream = keyboardFileStream;
         new Thread(() =>
         {
+            var hidStream = hidHandler.CreateHidStream(hidPath);
+            
             while (Active)
             {
                 byte[] buffer = new byte[24];
@@ -105,7 +107,7 @@ public class KeyboardHandler
 
                                 keyboard.Modifier = localModifier != null ? Convert.ToByte(localModifier) : null;
 
-                                hidHandler.WriteKeyboardReport(keyboard);
+                                hidHandler.WriteKeyboardReport(keyboard, hidStream);
                                 if (!_keysDown.Contains(code))
                                     _keysDown.Add(code);
                                 break;
@@ -157,7 +159,7 @@ public class KeyboardHandler
 
                                 keyboard.Modifier = localModifier != null ? Convert.ToByte(localModifier) : null;
 
-                                hidHandler.WriteKeyboardReport(keyboard);
+                                hidHandler.WriteKeyboardReport(keyboard, hidStream);
                                 break;
                             }
                         }
