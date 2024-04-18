@@ -24,10 +24,9 @@ Place the following above ``exit 0`` inside rc.local:
 
 4. Now either restart or run ``sudo /usr/bin/custom_gadget.sh``, and it should initialize hidg0, and hidg1 in ``/dev/`` (Example Script).
 
-## Setup on other devices
-- Dedicated [salve](https://en.wikipedia.org/wiki/Master/slave_(technology)) computer must support [USB OTG](https://en.wikipedia.org/wiki/USB_On-The-Go)
-- Linux installed on slave computer
-- Follow [pi setup](#pi-setup) to get gadget's working or follow [your own guide](https://google.com) _``modprobe gadgetfs``_
+## Setup on other Linux devices (Unsupported, _your mileage may vary_)
+- dwc2 must be in [salve](https://en.wikipedia.org/wiki/Master/slave_(technology)) / peripheral mode.
+- GadgetFs module loaded _``modprobe gadgetfs``_
 
 ## Examples
 Start handling inputs from ``/dev/input/mice`` (mouse device path) and output them to ``/dev/hidg0`` (**_the external computer_**)
