@@ -9,13 +9,20 @@ Icons from [icons8](https://icons8.com/).
 
 ## Pi setup
 Assuming your using a Rpi 4b, Zero, or newer Rpi 5
-1. dwc2 driver must be loaded on your pi you can follow this [guide](https://gist.github.com/gbaman/975e2db164b3ca2b51ae11e45e8fd40a?permalink_comment_id=2970837) or [isticktoit "Step 1"](https://www.isticktoit.net/?p=1383)
-2. Create a custom gadget here's an [example](./examples/custom_gadget.sh) using the compatible report descriptor. Make sure to run it with sudo, since it makes a directory in ``/sys/kernel/config/usb_gadget/``.
+1. dwc2, libcomposite modules must be loaded on your pi you can follow this [guide "Step 1", "Step 2", "Step 3"](https://www.isticktoit.net/?p=1383) (_ignore the update step_).
+2. Create a custom gadget _"config script"_, here's an [working example](./examples/custom_gadget.sh) using the compatible report descriptor.
+```shell
+sudo nano /usr/bin/custom_gadget.sh
+sudo chmod +x /usr/bin/custom_gadget.sh
 ```
-sudo ./custom_gadget.sh
-sudo restart now
+3. Next, you'll need it to auto run to init the gadget on boot or login e.g. rc.local
+```shell
+sudo nano /etc/rc.local/
 ```
-3. Now this library will be able to function
+Place the following above ``exit 0`` inside rc.local:
+``/usr/bin/custom_gadget``
+
+4. Now either restart or run ``sudo /usr/bin/custom_gadget.sh``, and it should initialize hidg0, and hidg1 in ``/dev/`` (Example Script).
 
 ## Setup on other devices
 - Dedicated [salve](https://en.wikipedia.org/wiki/Master/slave_(technology)) computer must support [USB OTG](https://en.wikipedia.org/wiki/USB_On-The-Go)
@@ -41,38 +48,25 @@ hidThread.Start();
 ### Extract state from device (Mouse)
 Grabs the current state from mouse 0 (*_/dev/input/mice_*), HidMouseHandlers is just a list make sure it's not empty. 
 ```c#
-bool left;
-bool right;
-hidHandler.HidMouseHandlers[0].MouseLock.EnterReadLock();
-try
-{
-    left = hidHandler.HidMouseHandlers[0].Mouse.LeftButton;
-    right = hidHandler.HidMouseHandlers[0].Mouse.RightButton;
-}
-finally
-{
-    hidHandler.HidMouseHandlers[0].MouseLock.ExitReadLock();
-}
+var mouseState = hidHandler.HidMouseHandlers[0].GetMouseState();
+bool left = mouseState.LeftButton;
+bool right = mouseState.RightButton;
 ```
 
 ### Injecting mouse events through the stream
 Moves the mouse down 5 while maintaining left & right button state.
 ```c#
-hidHandler.HidMouseHandlers[0].MouseLock.EnterReadLock();
-try
+var hidStream = hidHandler.CreateHidStream("/dev/hidg1");
+var mouseState = hidHandler.HidMouseHandlers[0].GetMouseState();
+
+hidHandler.WriteMouseReport(mouseState with
 {
-    hidHandler.WriteGenericEvent(hidHandler.HidMouseHandlers[0].Mouse with
-    {
-        X = 0,
-        Y = 5,
-        Wheel = 0
-    });
-}
-finally
-{
-    hidHandler.HidMouseHandlers[0].MouseLock.ExitReadLock();
-}
+    X = 0,
+    Y = 5,
+    Wheel = 0
+}, hidStream);
 ```
+When injecting mouse events or keyboard events use ``/dev/hidg1``. While you can use ``/dev/hidg0`` it is disincentived as it can cause slowdowns or outright crashing if the device file becomes overused. 
 
 ## Using with different devices
 By default the first mouse you connect should default all output into the legacy ``/dev/input/mice`` virtual device file.
@@ -97,7 +91,8 @@ This adds support for key macros on my real g502 mouse however this will vary ba
 
 ## Features
 - Hot reloading devices
-- Multithreading capable
+- Multithreading safe
+- Basic
 
 ## Report descriptor used by this library
 Parsed output from [eleccelerator](https://eleccelerator.com/usbdescreqparser).
