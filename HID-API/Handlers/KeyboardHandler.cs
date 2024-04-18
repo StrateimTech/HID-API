@@ -7,7 +7,6 @@ public class KeyboardHandler
     private readonly List<int> _keysDown = new();
 
     public readonly string Path;
-    public readonly FileStream DeviceStream;
     public bool Active = true;
 
     public KeyboardHandler(HidHandler hidHandler, FileStream keyboardFileStream, string streamPath, string hidPath)
@@ -18,7 +17,6 @@ public class KeyboardHandler
         
         // TODO: Multithreaded keyboard keys have to be globally handled since keydowns will be overwritten and such 
         Path = streamPath;
-        DeviceStream = keyboardFileStream;
         new Thread(() =>
         {
             var hidStream = hidHandler.CreateHidStream(hidPath);
