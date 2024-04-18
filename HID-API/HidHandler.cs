@@ -99,17 +99,8 @@ public class HidHandler
 
     public void Stop()
     {
-        foreach (var mouseHandler in HidMouseHandlers)
-        {
-            mouseHandler.DeviceStream.Close();
-            mouseHandler.Active = false;
-        }
-
-        foreach (var keyboardHandler in HidKeyboardHandlers)
-        {
-            keyboardHandler.DeviceStream.Close();
-            keyboardHandler.Active = false;
-        }
+        HidMouseHandlers.ForEach(handler => handler.Active = false);
+        HidKeyboardHandlers.ForEach(handler => handler.Active = false);
 
         if (_hidPath != null)
         {
@@ -132,16 +123,12 @@ public class HidHandler
                                   (mouse.FourButton ? 8 : 0) |
                                   (mouse.FiveButton ? 16 : 0));
 
-        float sensitivityMultiplier = mouse.SensitivityMultiplier;
-
-        short x = (short) (mouse.X * sensitivityMultiplier);
-        short y = (short) (mouse.Y * sensitivityMultiplier);
         sbyte wheel = (sbyte) mouse.Wheel;
 
         WriteUtils.WriteMouseReport(fileStream,
             1,
             buttonByte,
-            new[] {x, y},
+            new[] {mouse.X, mouse.Y},
             wheel);
     }
 
