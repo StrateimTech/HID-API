@@ -29,14 +29,18 @@ public static class WriteUtils
         stream.Flush();
     }
     
-    public static void WriteMouseReport(FileStream stream, byte reportId, byte bytes, short[] shorts, sbyte signedByte)
+    public static void WriteMouseReport(FileStream stream, byte reportId, byte bytes, short x, short y, sbyte signedByte)
     {
         byte[] buffer = new byte[7];
         
         buffer[0] = reportId;
         buffer[1] = bytes;
         
-        Buffer.BlockCopy(shorts, 0, buffer, 2, 4);
+        buffer[2] = (byte) (x & 0xff);
+        buffer[3] = (byte) ((x >> 8) & 0xff);
+        buffer[4] = (byte) (y & 0xff);
+        buffer[5] = (byte) ((y >> 8) & 0xff);
+        
         buffer[6] = (byte)signedByte;
         
         stream.Write(buffer, 0, 7);

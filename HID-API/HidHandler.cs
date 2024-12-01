@@ -124,12 +124,7 @@ public class HidHandler
                                   (mouse.FiveButton ? 16 : 0));
 
         sbyte wheel = (sbyte) mouse.Wheel;
-
-        WriteUtils.WriteMouseReport(fileStream,
-            1,
-            buttonByte,
-            new[] {mouse.X, mouse.Y},
-            wheel);
+        WriteUtils.WriteMouseReport(fileStream, 1, buttonByte, mouse.X, mouse.Y, wheel);
     }
 
     public void WriteKeyboardReport(Keyboard keyboard, FileStream fileStream)
